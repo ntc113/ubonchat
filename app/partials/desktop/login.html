@@ -1,0 +1,56 @@
+<div my-head></div>
+
+
+<div class="login_form_wrap" my-vertical-position="0.4">
+  <div class="error" ng-if="error.message" ng-bind="error.message"></div>
+
+  <form name="mySendCodeForm" ng-if="!credentials.phone_code_hash" ng-submit="sendCode()">
+    <h3 class="login_form_head" my-i18n="login_sign_in"></h3>
+    <p class="login_form_lead" my-i18n="login_enter_number_description"></p>
+
+    <div class="login_country_selector" ng-click="chooseCountry()">
+      <span ng-bind="credentials.phone_country_name + ' (' + credentials.phone_country + ')'"></span>
+      <i class="icon icon-caret pull-right"></i>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': error.field == 'phone'}">
+      <label class="control-label" ng-if="error.field == 'phone'" my-i18n="login_incorrect_number"></label>
+      <div class="clearfix">
+        <!-- <input type="tel" autocomplete="off" class="form-control pull-left login_phone_country" my-focused name="phone_country" ng-model="credentials.phone_country"> -->
+        <input ng-if="credentials.phone_country == '+84'" type="tel" autocomplete="off" class="form-control pull-left login_phone_number" my-focus-on="country_selected" name="phone_number" ng-model="credentials.phone_number" placeholder="{{'login_tel_input_placeholder' | i18n}}" pattern="( )*\d{9,10}( )*" required  title="{{'error_modal_phone_invalid_description_vn' | i18n}}">
+        <input ng-if="credentials.phone_country != '+84'" type="tel" autocomplete="off" class="form-control pull-left login_phone_number" my-focus-on="country_selected" name="phone_number" ng-model="credentials.phone_number" placeholder="{{'login_tel_input_placeholder' | i18n}}" pattern="( )*\d{5,}( )*" required  title="{{'error_modal_phone_invalid_description' | i18n}}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" ng-class="{disabled: progress.enabled}" ng-disabled="progress.enabled" type="submit" ng-switch="progress.enabled">
+      <span ng-switch-when="true"><my-i18n msgid="login_generating_key"></my-i18n><span my-loading-dots></span></span>
+      <span ng-switch-default my-i18n="modal_next"></span>
+    </button>
+    <!-- <div class="login_form_messaging" ng-show="progress.enabled" my-i18n="login_generating_keys_info"></div> -->
+  </form>
+
+  <form name="myLoginForm" ng-if="credentials.phone_code_hash &amp;&amp; !credentials.phone_code_valid" ng-submit="logIn()">
+    <h3 class="login_form_head"><span ng-bind="credentials.phone_country"></span> <span ng-bind="credentials.phone_number"></span></h3>
+    <div class="login_edit_phone"><a ng-click="editPhone()" my-i18n="login_edit_number"></a></div>
+    <div ng-switch="credentials.viaApp">
+      <div ng-switch-when="true">
+        <p class="login_form_lead" my-i18n="login_enter_code_label_md"></p>
+      </div>
+      <div ng-switch-default>
+        <p class="login_form_lead" my-i18n="login_enter_sms_code_label_md"></p>
+      </div>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': error.field == 'phone_code'}">
+      <label class="control-label" for="phone_code" ng-if="error.field == 'phone_code'" my-i18n="login_incorrect_sms_code"></label>
+      <input type="password" my-focused class="form-control login_phone_code" name="phone_code" ng-model="credentials.phone_code" placeholder="{{'login_number_input_placeholder' | i18n}}" autocomplete="off" required pattern=".{6,}" required title="{{'error_minlength_6' | i18n}}">
+    </div>
+
+    <button class="btn btn-primary btn-block" type="submit" ng-class="{disabled: progress.enabled}" ng-disabled="progress.enabled" ng-switch="progress.enabled">
+      <span ng-switch-when="true"><my-i18n msgid="login_checking_code"></my-i18n><span my-loading-dots></span></span>
+      <span ng-switch-default my-i18n="modal_next"></span>
+    </button>
+  </form>
+
+</div>
+
+<!-- <div my-lang-footer></div> -->

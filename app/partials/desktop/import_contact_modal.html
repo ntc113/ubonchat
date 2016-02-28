@@ -1,0 +1,28 @@
+<div class="import_modal_wrap" my-modal-position>
+
+  <a class="modal-close-button" ng-click="$dismiss()"><i></i></a>
+
+  <form class="modal_simple_form" ng-controller="AppLoginController" ng-submit="findFriend()">
+
+    <h4 my-i18n="contact_import_modal_title"></h4>
+    <div class="login_country_selector" ng-click="chooseCountry()">
+      <span ng-bind="credentials.phone_country_name + ' (' + credentials.phone_country + ')'"></span>
+      <i class="icon icon-caret pull-right"></i>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': error.field == 'phone'}">
+      <label class="control-label" ng-if="error.field == 'phone'" my-i18n="login_incorrect_number"></label>
+      <div class="clearfix">
+        <!-- <input type="tel" autocomplete="off" class="form-control pull-left login_phone_country" my-focused name="phone_country" ng-model="credentials.phone_country"> -->
+        <input ng-if="credentials.phone_country == '+84'" type="tel" autocomplete="off" class="form-control pull-left login_phone_number" my-focus-on="country_selected" name="phone_number" ng-model="credentials.phone_number" placeholder="{{'login_tel_input_placeholder' | i18n}}" pattern="( )*\d{9,10}( )*" required  title="{{'error_modal_phone_invalid_description_vn' | i18n}}">
+        <input ng-if="credentials.phone_country != '+84'" type="tel" autocomplete="off" class="form-control pull-left login_phone_number" my-focus-on="country_selected" name="phone_number" ng-model="credentials.phone_number" placeholder="{{'login_tel_input_placeholder' | i18n}}" pattern="( )*\d{5,}( )*" required  title="{{'error_modal_phone_invalid_description' | i18n}}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" ng-class="{disabled: progress.enabled}" ng-disabled="progress.enabled" type="submit" ng-switch="progress.enabled">
+      <span ng-switch-when="true"><my-i18n msgid="login_generating_key"></my-i18n><span my-loading-dots></span></span>
+      <span ng-switch-default my-i18n="modal_next"></span>
+    </button>
+    <!-- <div class="login_form_messaging" ng-show="progress.enabled" my-i18n="login_generating_keys_info"></div> -->
+  </form>
+
+</div>
