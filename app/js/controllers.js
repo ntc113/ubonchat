@@ -305,13 +305,13 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       MtpApiManager.sendMsg('Hi');
     }
 
-    /*$scope.openSettings = function () {
+    $scope.openSettings = function () {
       $modal.open({
         templateUrl: templateUrl('settings_modal'),
         controller: 'SettingsModalController',
         windowClass: 'settings_modal_window mobile_modal'
       });
-    }*/
+    }
 
     $scope.openContacts = function () {
       ContactsSelectService.selectContact().then(function (userID) {
@@ -319,7 +319,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         $scope.dialogSelect(/*AppUsersManager.getUserString(userID)*/);
       });
     };
-/*
     $scope.openGroup = function () {
       ContactsSelectService.selectContacts({action: 'new_group'}).then(function (userIDs) {
 
@@ -349,7 +348,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         }
       });
     };
-    */
     $scope.dialogSelect = function (peerString, messageID) {
       console.log ('dialogSelect');
       var params = {peerString: peerString};
@@ -377,7 +375,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       }
     };
 
-    /*
     $scope.toggleEdit = function () {
       $scope.$broadcast('history_edit_toggle');
     };
@@ -393,7 +390,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     $scope.toggleSearch = function () {
       $scope.$broadcast('dialogs_search_toggle');
     };
-    */
     updateCurDialog();
 
     var lastSearch = false;
@@ -460,9 +456,9 @@ angular.module('myApp.controllers', ['myApp.i18n'])
 
     $scope.$watch('curDialog', applyDialogSelect);
 
-    // ApiUpdatesManager.attach();
-    // IdleManager.start();
-    // StatusManager.start();
+    ApiUpdatesManager.attach();
+    IdleManager.start();
+    StatusManager.start();
 
     $scope.peerHistories = [];
     $scope.skippedHistory = false;
@@ -472,7 +468,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     $scope.missedCount = 0;
     $scope.state = {};
 
-    /*$scope.toggleMessage = toggleMessage;
+    $scope.toggleMessage = toggleMessage;
     $scope.selectedDelete = selectedDelete;
     $scope.selectedForward = selectedForward;
     $scope.selectedCancel = selectedCancel;
@@ -490,7 +486,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
 
 
     $scope.$on('history_return_recent', returnToRecent);
-*/
     var peerID,
         peerHistory = false,
         hasMore = false,
@@ -826,7 +821,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
 
       $scope.$broadcast('ui_history_change');
     }
-/*
     function toggleMessage (messageID, $event) {
       var target = $event.target,
           shiftClick = $event.shiftKey;
@@ -881,7 +875,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         }
       }
       $scope.$broadcast('messages_select');
-    }*/
+    }
 
     function selectedCancel (noBroadcast) {
       $scope.selectedMsgs = {};
@@ -893,7 +887,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       }
       $scope.$broadcast('messages_select');
     }
-/*
     function selectedFlush () {
       ErrorService.confirm({type: 'HISTORY_FLUSH'}).then(function () {
         AppMessagesManager.flushHistory($scope.curDialog.inputPeer).then(function () {
@@ -1075,8 +1068,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       if (!newVal && $scope.curDialog && $scope.curDialog.peerID && !$scope.historyFilter.mediaType && !$scope.skippedHistory) {
         AppMessagesManager.readHistory($scope.curDialog.inputPeer);
       }
-    });*/
-
+    });
   })
 
   .controller('AppImPanelController', function($scope) {
