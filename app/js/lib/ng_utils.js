@@ -904,9 +904,12 @@ angular.module('izhukov.utils', [])
     }
 
     // console.log('IDLE changed', isIDLE);
-    $rootScope.$apply(function () {
-      $rootScope.idle.isIDLE = isIDLE;
-    });
+    if(!$rootScope.$$phase) {
+      $rootScope.$apply(function () {
+        $rootScope.idle.isIDLE = isIDLE;
+      });
+    }
+    
 
     if (isIDLE && e.type == 'timeout') {
       $($window).on('mousemove', onEvent);

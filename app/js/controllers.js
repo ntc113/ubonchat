@@ -316,7 +316,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     $scope.openContacts = function () {
       ContactsSelectService.selectContact().then(function (userID) {
         console.log ()
-        $scope.dialogSelect(/*AppUsersManager.getUserString(userID)*/);
+        $scope.dialogSelect(AppUsersManager.getUserString(userID));
       });
     };
     $scope.openGroup = function () {
@@ -350,7 +350,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     };
     $scope.dialogSelect = function (peerString, messageID) {
       console.log ('dialogSelect');
-      var params = {peerString: peerString};
+      var params = {peerString: peerString, messageID:0};
       if (messageID) {
         params.messageID = messageID;
       }
@@ -535,7 +535,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         showEmptyHistory();
       }
     }
-/*
+
     function historiesQueuePush (peerID) {
       var pos = -1,
           maxLen = 10,
@@ -576,13 +576,13 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       }
       return false;
     }
-*/
+
     function updateHistoryPeer(preload) {
       var peerData = AppPeersManager.getPeer(peerID);
       // console.log('update', preload, peerData);
       if (!peerData || peerData.deleted) {
         safeReplaceObject($scope.state, {loaded: false});
-        return false;
+        // return false;
       }
 
       peerHistory = historiesQueuePush(peerID);
@@ -603,6 +603,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         $scope.$broadcast('ui_history_change');
         safeReplaceObject($scope.state, {loaded: true, empty: !peerHistory.messages.length});
       }
+      $scope.state = {loaded: true}; //ntc113 test
     }
 
     function messageFocusHistory () {
@@ -2404,7 +2405,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       var filtered = false,
           results = {};
 
-      /*if (angular.isString($scope.search.query) && $scope.search.query.length) {
+      if (angular.isString($scope.search.query) && $scope.search.query.length) {
         filtered = true;
         results = SearchIndexManager.search($scope.search.query, searchIndex);
 
@@ -2418,7 +2419,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       } else {
         $scope.contacts = $scope.phonebook;
         $scope.contactsEmpty = !$scope.contacts.length;
-      }*/
+      }
       var friends = "{\"friends\":[{\"sex\":2,\"lastVisitDate\":1422462534,\"avatarSmall\":\"http://s0.ubon.vn/avatar/2015/01/09/1420815728361_ios_file0.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"Life is beautiful\",\"fullnameAscii\":\"Quynh OTT\",\"modified\":1421031899,\"username\":\"\",\"userId\":9473,\"relType\":1,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Quynh OTT\"},{\"sex\":2,\"lastVisitDate\":1422354880,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"fullnameAscii\":\"sjfjd sjs\",\"modified\":1418207878,\"username\":\"\",\"userId\":11073,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"sjfjd sjs\"},{\"sex\":2,\"lastVisitDate\":1422494292,\"avatarSmall\":\"http://s1.ubon.vn/avatar/2015/01/19/1421655192173_1421655085917.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"yawn\",\"fullnameAscii\":\"Cong Map\",\"modified\":1421655199,\"username\":\"\",\"userId\":11679,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Công Mập\"},{\"sex\":2,\"lastVisitDate\":1422335198,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"yawndsfsdf\",\"fullnameAscii\":\"Cong Test\",\"modified\":1418809521,\"username\":\"\",\"userId\":17371,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Công Test\"},{\"sex\":2,\"lastVisitDate\":1422491214,\"avatarSmall\":\"http://s1.ubon.vn/avatar/2014/12/12/1418438259212_ios_file0.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"Sólo consultas sobre UBon.\",\"fullnameAscii\":\"UBon\",\"modified\":1420577701,\"username\":\"ubon\",\"userId\":1,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"UBon\"},{\"sex\":2,\"lastVisitDate\":1422491848,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"\",\"fullnameAscii\":\"Vt A Huydn2\",\"modified\":1422005234,\"aliasName\":\"Vt A Huydn2\",\"aliasNameAscii\":\"Vt A Huydn2\",\"username\":\"\",\"phoneNumber\":\"84986776707\",\"userId\":9851,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Vt A Huydn2\"},{\"sex\":2,\"lastVisitDate\":1422454742,\"avatarSmall\":\"http://s1.ubon.vn/avatar/2015/01/08/1420772021781_ios_file0.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"oOoOoOoOoOoOoOo\",\"fullnameAscii\":\"Phu\",\"modified\":1420772022,\"username\":\"\",\"userId\":9472,\"relType\":2,\"privacyComment\":0,\"privacyReceiveMessage\":0,\"privacyPostProfile\":0,\"fullname\":\"Phu\"},{\"sex\":1,\"lastVisitDate\":1422432763,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"Thứ 7\",\"fullnameAscii\":\"Kim Cuc Nguyen\",\"modified\":1422350561,\"username\":\"\",\"userId\":17631,\"relType\":1,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Kim Cuc Nguyen\"}]}";
       friends = JSON.parse(friends);
       $scope.contacts = friends.friends;
