@@ -9,7 +9,6 @@ var _logTimer = (new Date()).getTime();
 function dT () {
   return '[' + (((new Date()).getTime() - _logTimer) / 1000).toFixed(3) + ']';
 }
-
 function checkClick (e, noprevent) {
   if (e.which == 1 && (e.ctrlKey || e.metaKey) || e.which == 2) {
     return true;
@@ -151,3 +150,24 @@ function calcImageInBox(imageW, imageH, boxW, boxH, noZooom) {
 
   return {w: boxedImageW, h: boxedImageH};
 }
+
+
+function randomAvatarColor (uid) {
+    return 'cl' + uid%7;
+}
+function getAvatarText (fullname){
+    var key = "";
+    if (!fullname) return "";
+
+    var words = fullname.split(" ");
+    if (words.length == 1)
+    {
+        key = words[0].substring(0, words[0].length == 1 ? 1 : 2);
+    }
+    else
+    {
+        key = words[0].substring(0, 1) + words[words.length - 1].substring(0, 1);
+    }
+
+    return key.toUpperCase();
+};

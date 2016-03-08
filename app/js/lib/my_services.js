@@ -145,10 +145,14 @@ angular.module('myservices', [])
 
   return {process:process}
 })
-// 73
-.service ('HaveMessage2Service', function () {
+// 73: {"msgId":62823930,"from":44,"msg":"V"}
+.service ('HaveMessage2Service', function (ThreadsManager, HistoriesManager) {
   function process (packetBody) {
     console.log ('----------- HaveMessage2Service ----------');
+    var newThread = {}, 
+        newHistory = {};
+    ThreadsManager.addThread (newThread);
+    HistoriesManager.addHistory (newHistory);
     console.log (packetBody);
   }
 

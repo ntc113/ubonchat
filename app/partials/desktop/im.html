@@ -6,7 +6,7 @@
 
     <div class="im_dialogs_col_wrap" ng-controller="AppImDialogsController" my-dialogs>
       <div class="im_dialogs_panel">
-        <!-- <div class="dropdown im_dialogs_panel_dropdown pull-right" dropdown>
+        <div class="dropdown im_dialogs_panel_dropdown pull-right" dropdown>
           <a class="dropdown-toggle" dropdown-toggle>
           </a>
           <ul class="dropdown-menu">
@@ -15,7 +15,7 @@
             <li ng-if="!isEmpty.contacts"><a ng-click="openContacts()" my-i18n="im_contacts"></a></li>
             <li><a ng-click="openSettings()" my-i18n="im_settings"></a></li>
           </ul>
-        </div> -->
+        </div>
         <div class="im_dialogs_search">
           <input class="form-control im_dialogs_search_field no_outline" type="search" placeholder="{{'modal_search' | i18n}}" ng-model="search.query"/>
           <a class="im_dialogs_search_clear" ng-click="searchClear()" ng-show="search.query.length"></a>
@@ -42,10 +42,10 @@
               </ul>
             </div>
 
-            <div class="im_dialogs_contacts_wrap" ng-show="!search.messages &amp;&amp; contacts.length > 0">
+            <div class="im_dialogs_contacts_wrap" ng-show="!search.messages &amp;&amp; threads.length > 0">
               <!-- <h5 my-i18n="im_contacts_title"></h5> -->
               <ul class="nav nav-pills nav-stacked">
-                <li class="im_dialog_wrap" ng-repeat="contact in contacts | filter:search.query | orderBy:'contact.fullname' track by contact.userId" ng-class="{active: curDialog.peerID == contact.userId}">
+                <!-- <li class="im_dialog_wrap" ng-repeat="contact in contacts | filter:search.query | orderBy:'contact.fullname' track by contact.userId" ng-class="{active: curDialog.peerID == contact.userId}">
                   <a class="im_dialog" ng-mousedown="dialogSelect('u'+contact.userId)">
                     <div class="im_dialog_photo pull-left" img-class="im_dialog_photo">
                       <img ng-show="contact.avatarSmall.length > 0" class="im_dialog_photo" src="{{contact.avatarSmall}}" alt="">
@@ -57,6 +57,22 @@
                       </div>
                       <div class="im_dialog_message">
                         <span class="im_dialog_message_text">{{contact.statusMessage}}</span>
+                      </div>
+                    </div>
+                  </a>
+                </li> -->
+                <li class="im_dialog_wrap" ng-repeat="thread in threads">
+                  <a class="im_dialog">
+                    <div class="im_dialog_photo pull-left" img-class="im_dialog_photo">
+                      <img ng-show="thread.avatarSmall.length > 0" class="im_dialog_photo" src="{{thread.avatarSmall}}" alt="">
+                      <span ng-show="thread.avatarSmall.length == 0" class="im_dialog_photo" ng-class="randomAvatarColor(thread.fromId)">{{getAvatarText(thread.fromName)}}</span>
+                    </div>
+                    <div class="im_dialog_message_wrap">
+                      <div class="im_dialog_peer">
+                        <span class="im_dialog_user">{{thread.fromName}}</span>
+                      </div>
+                      <div class="im_dialog_message">
+                        <span class="im_dialog_message_text">{{thread.latestMessage}}</span>
                       </div>
                     </div>
                   </a>

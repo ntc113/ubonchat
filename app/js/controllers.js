@@ -30,7 +30,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     });
   })
 
-  .controller('AppLoginController', function ($scope, $rootScope, $location, $timeout, $modal, $modalStack, Storage, SessionService, MtpApiManager, ErrorService, NotificationsManager, ChangelogNotifyService, _, socket, BaseService) {
+  .controller('AppLoginController', function (UsersManager, $scope, $rootScope, $location, $timeout, $modal, $modalStack, Storage, SessionService, MtpApiManager, ErrorService, NotificationsManager, ChangelogNotifyService, _, socket, BaseService) {
 
     //close modal every where
     $modalStack.dismissAll();
@@ -202,9 +202,11 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         if (packet.service == 2) {
           try {
             var body = JSON.parse (packet.body);
+            console.log(packet.body);
             if (body.resultCode == 1) {
+              UsersManager.setCurrentUser(packet.body);
               $scope.progress.enabled = true;
-              saveAuth ({id:body.userId, username: $scope.credentials.phone_full, password: $scope.credentials.phone_code});
+              // saveAuth ({id:body.userId, username: $scope.credentials.phone_full, password: $scope.credentials.phone_code});
             } else {
               $scope.progress.enabled = false;
               $scope.error = {field: 'phone_code'};
@@ -229,6 +231,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         //   MtpApiManager.loginViaPass ( auth.username, auth.password );
         // });
       });
+      console.log(socket);
     };
 
     // var socketTimeout = $timeout (function () {
@@ -246,13 +249,21 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     }
   })
 
-  .controller('AppIMController', function ($scope, $location, $routeParams, $modal, $interval, Storage, $rootScope, $modalStack, socket, MtpApiManager, AppUsersManager, AppChatsManager, ContactsSelectService, ChangelogNotifyService, ErrorService, AppRuntimeManager, HttpsMigrateService, LayoutSwitchService) {
+  .controller('AppIMController', function ($scope, $location, $routeParams, $modal, $interval, Storage, $rootScope, $modalStack, socket, MtpApiManager, AppUsersManager, AppChatsManager, ContactsSelectService, ChangelogNotifyService, ErrorService, AppRuntimeManager, HttpsMigrateService, LayoutSwitchService, ThreadsManager) {
     //close modal every where
     $modalStack.dismissAll();
+    console.log(socket);
+
+    $scope.threads = ThreadsManager.getThreads();
 
     socket.on ('WebPacket', function (packet) {
       console.log ('-------- has packet: ', packet.service, Math.round(+new Date()/1000));
-      $interval.cancel (socketTimeout);
+      //$interval.cancel (socketTimeout);
+    });
+    $scope.$on('$destroy', function (event) {
+        socket.removeAllListeners();
+        // or something like
+        // socket.removeListener(this);
     });
 
     var socketTimeout = $interval (function () {
@@ -275,7 +286,10 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         return;
       } else if (!isConnected) {
         Storage.get('user_auth').then(function (auth) {
-          MtpApiManager.loginViaPass ( auth.username, auth.password );
+          // MtpApiManager.loginViaPass ( auth.username, auth.password );
+          console.log('relogin......');
+          socket.emit ('WebPacket', {service: 29, body: JSON.stringify()});
+          socket.emit('WebPacket', {service: 2, body: JSON.stringify({username:phonenumber, password:md5(password)})});
         });
       };
     });
@@ -316,7 +330,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     $scope.openContacts = function () {
       ContactsSelectService.selectContact().then(function (userID) {
         console.log ()
-        $scope.dialogSelect(/*AppUsersManager.getUserString(userID)*/);
+        $scope.dialogSelect(AppUsersManager.getUserString(userID));
       });
     };
     $scope.openGroup = function () {
@@ -353,6 +367,14 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       var params = {peerString: peerString};
       if (messageID) {
         params.messageID = messageID;
+      }
+      else if ($scope.search.query) {
+        $scope.searchClear();
+      }
+      var peerID = AppPeersManager.getPeerID(peerString);
+      var converted = AppMessagesManager.convertMigratedPeer(peerID);
+      if (converted) {
+        params.peerString = AppPeersManager.getPeerString(converted);
       }
       $rootScope.$broadcast('history_focus', params);
     };
@@ -411,6 +433,26 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       };
       console.log ('CONTROLLER: curDialog: %s', JSON.stringify($scope.curDialog));
     }
+
+    $scope.randomAvatarColor = function(uid) {
+        return 'user_bgcolor_' + uid%7;
+    }
+    $scope.getAvatarText = function(fullname){
+        var key = "";
+        if (!fullname) return "";
+
+        var words = fullname.split(" ");
+        if (words.length == 1)
+        {
+            key = words[0].substring(0, words[0].length == 1 ? 1 : 2);
+        }
+        else
+        {
+            key = words[0].substring(0, 1) + words[words.length - 1].substring(0, 1);
+        }
+
+        return key.toUpperCase();
+    };
   })
 
   .controller('AppImDialogsController', function ($scope, $location, $q, $timeout, $routeParams, MtpApiManager, AppUsersManager, AppChatsManager, AppMessagesManager, AppPeersManager, PhonebookContactsService, ErrorService) {
@@ -535,7 +577,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         showEmptyHistory();
       }
     }
-/*
     function historiesQueuePush (peerID) {
       var pos = -1,
           maxLen = 10,
@@ -576,11 +617,10 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       }
       return false;
     }
-*/
     function updateHistoryPeer(preload) {
       var peerData = AppPeersManager.getPeer(peerID);
       // console.log('update', preload, peerData);
-      if (!peerData || peerData.deleted) {
+      if (!peerData/* || peerData.deleted*/) {
         safeReplaceObject($scope.state, {loaded: false});
         return false;
       }
@@ -2404,7 +2444,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       var filtered = false,
           results = {};
 
-      /*if (angular.isString($scope.search.query) && $scope.search.query.length) {
+      if (angular.isString($scope.search.query) && $scope.search.query.length) {
         filtered = true;
         results = SearchIndexManager.search($scope.search.query, searchIndex);
 
@@ -2418,7 +2458,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       } else {
         $scope.contacts = $scope.phonebook;
         $scope.contactsEmpty = !$scope.contacts.length;
-      }*/
+      }
       var friends = "{\"friends\":[{\"sex\":2,\"lastVisitDate\":1422462534,\"avatarSmall\":\"http://s0.ubon.vn/avatar/2015/01/09/1420815728361_ios_file0.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"Life is beautiful\",\"fullnameAscii\":\"Quynh OTT\",\"modified\":1421031899,\"username\":\"\",\"userId\":9473,\"relType\":1,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Quynh OTT\"},{\"sex\":2,\"lastVisitDate\":1422354880,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"fullnameAscii\":\"sjfjd sjs\",\"modified\":1418207878,\"username\":\"\",\"userId\":11073,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"sjfjd sjs\"},{\"sex\":2,\"lastVisitDate\":1422494292,\"avatarSmall\":\"http://s1.ubon.vn/avatar/2015/01/19/1421655192173_1421655085917.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"yawn\",\"fullnameAscii\":\"Cong Map\",\"modified\":1421655199,\"username\":\"\",\"userId\":11679,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Công Mập\"},{\"sex\":2,\"lastVisitDate\":1422335198,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"yawndsfsdf\",\"fullnameAscii\":\"Cong Test\",\"modified\":1418809521,\"username\":\"\",\"userId\":17371,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Công Test\"},{\"sex\":2,\"lastVisitDate\":1422491214,\"avatarSmall\":\"http://s1.ubon.vn/avatar/2014/12/12/1418438259212_ios_file0.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"Sólo consultas sobre UBon.\",\"fullnameAscii\":\"UBon\",\"modified\":1420577701,\"username\":\"ubon\",\"userId\":1,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"UBon\"},{\"sex\":2,\"lastVisitDate\":1422491848,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"\",\"fullnameAscii\":\"Vt A Huydn2\",\"modified\":1422005234,\"aliasName\":\"Vt A Huydn2\",\"aliasNameAscii\":\"Vt A Huydn2\",\"username\":\"\",\"phoneNumber\":\"84986776707\",\"userId\":9851,\"relType\":2,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Vt A Huydn2\"},{\"sex\":2,\"lastVisitDate\":1422454742,\"avatarSmall\":\"http://s1.ubon.vn/avatar/2015/01/08/1420772021781_ios_file0.jpg\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"oOoOoOoOoOoOoOo\",\"fullnameAscii\":\"Phu\",\"modified\":1420772022,\"username\":\"\",\"userId\":9472,\"relType\":2,\"privacyComment\":0,\"privacyReceiveMessage\":0,\"privacyPostProfile\":0,\"fullname\":\"Phu\"},{\"sex\":1,\"lastVisitDate\":1422432763,\"avatarSmall\":\"\",\"status\":0,\"type\":0,\"privacyViewProfile\":0,\"statusMessage\":\"Thứ 7\",\"fullnameAscii\":\"Kim Cuc Nguyen\",\"modified\":1422350561,\"username\":\"\",\"userId\":17631,\"relType\":1,\"privacyComment\":2,\"privacyReceiveMessage\":0,\"privacyPostProfile\":2,\"fullname\":\"Kim Cuc Nguyen\"}]}";
       friends = JSON.parse(friends);
       $scope.contacts = friends.friends;

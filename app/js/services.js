@@ -4030,3 +4030,64 @@ angular.module('myApp.services', ['myApp.i18n', 'izhukov.utils', 'btford.socket-
     switchLayout: switchLayout
   }
 })
+.service('UsersManager', function () {
+  //{"birthday":605552400,"sex":2,"privacyViewOnlineStatus":0,"allowOl":1,"privacyAllowFindViaEmail":true,
+  //"privacyViewAvatar":0,"type":0,"fullnameAscii":"Cong Map","username":"","privacyViewCommentLike":0,
+  //"phoneNumber":"841656067907","userId":48,"resultCode":1,"privacyShowPreview":true,"privacyReceiveMessage":0,
+  //"privacyPostProfile":2,"privacyAllowFindViaFacebook":true,"fullname":"Công Mập","oIp":"210.211.116.139",
+  //"avatarSmall":"http://s0.ubon.vn/avatar/2016/02/29/1456680909472_1456680894119.jpg","privacyAllowFindWifi":true,
+  //"countryCode":"84","privacyViewProfile":0,"modified":1456680972,"statusMessage":"New change new challenge",
+  //"privacyVisitHomePage":1,"privacyViewStatusMsg":0,"privacyComment":2}
+  var currentUser = {};
+
+  this.setCurrentUser = function(value){
+      currentUser = value;
+  };
+
+  this.getCurrentUser = function(){
+      return (currentUser.length != 0) ? currentUser : null;
+  };
+})
+.service ('ThreadsManager', function () {
+  var threads = [], 
+      maxThreadId = 3;
+  threads = [
+    {threadId:1, fromId:2, toId:1, fromName:"User2", toName:"User1", latestMessage:"latestMessage1", avatarSmall:"" },
+    {threadId:2, fromId:4, toId:1, fromName:"User3", toName:"User1", latestMessage:"latestMessage2", avatarSmall:"" },
+    {threadId:3, fromId:3, toId:1, fromName:"User4", toName:"User1", latestMessage:"latestMessage3", avatarSmall:"" },
+  ];
+// {"msgId":62823930,"from":44,"msg":"V"
+  this.addThread = function(value){
+      maxThreadId += 1;
+      value.threadId = maxThreadId;
+      threads.push(value);
+  };
+
+  this.getThreads = function(){
+      return threads;
+  };
+  this.getThreadById = function (threadId) {
+    for (thread in listThreads) {
+      if (thread.threadId = threadId) return thread;
+    }
+    return false;
+  }
+})
+.service('HistoriesManager', function () {
+  var histories = [];
+  
+  this.addHistory = function(value){
+      histories.push(value);
+  };
+
+  this.getHistories = function(){
+      return histories;
+  };
+
+  this.getHistoryById = function (threadId) {
+    for (history in histories) {
+      if (history.threadId = threadId) return history;
+    }
+    return false;
+  }
+})
