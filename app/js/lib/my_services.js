@@ -4,19 +4,22 @@
 
 angular.module('myservices', [])
 // 1
-.service ('PingService', function (MtpApiManager) {
+.service ('PingService', function (socket) {
   function process () {
     console.log ('----------- Ping service ----------', Math.round(+new Date()/1000));
-    MtpApiManager.pingToServer();
+    sendPacket(socket, {service:1, body:''});
+    console.log('ping to server');
   }
 
   return {process:process}
 })
 // 2
-.service ('LoginService', function () {
+.service ('LoginService', function (UsersManager) {
   function process (packetBody) {
     console.log ('----------- LoginService service ----------');
-    console.log (packetBody);
+    UsersManager.setCurrentUser(JSON.parse(packetBody));
+    UsersManager.addUser(JSON.parse(packetBody));
+    // console.log (packetBody);
   }
 
   return {process:process}
@@ -49,21 +52,21 @@ angular.module('myservices', [])
   return {process:process}
 })
 // 13
-.service ('FriendListService', function (Storage) {
+.service ('FriendListService', function (UsersManager) {
   function process (packetBody) {
     console.log ('----------- FriendListService ----------');
-    Storage.set({
-      friendlist: packetBody
-    });
+    var listUser = JSON.parse(packetBody);
+    for (var i in listUser)
+      UsersManager.addUser(listUser[i]);
   }
 
   return {process:process}
 })
 // 24
-.service ('UserInfoService', function ($rootScope, $modal, $modalStack, Storage, ErrorService) {
+.service ('UserInfoService', function (UsersManager, ThreadsManager) {// function ($rootScope, $modal, $modalStack, Storage, ErrorService) {
   function process (packetBody) {
     console.log ('----------- UserInfoService ----------');
-    var userInfo = {};
+    /*var userInfo = {};
     var scope = $rootScope.$new();
     try {
       userInfo = JSON.parse (packetBody);
@@ -84,7 +87,18 @@ angular.module('myservices', [])
       }
     } catch (e) {
       console.log ('Error: ', e);
-    }
+    }*/
+    // get UserInfo
+    var threads = ThreadsManager.getThreads();
+    var user = JSON.parse(packetBody);
+    UsersManager.addUser(user);
+    for (var i in threads) {
+      if(threads[i].from == user.userId) {
+        threads[i].fullname = user.fullname;
+        threads[i].avatarSmall = user.avatarSmall;
+      }
+    };
+
   }
 
   return {process:process}
@@ -94,7 +108,6 @@ angular.module('myservices', [])
 .service ('FriendListDoneService', function ($location) {
   function process (packetBody) {
     console.log ('----------- FriendListDoneService ----------');
-    console.log (packetBody);
     $location.url ('/im');
   }
 
@@ -146,14 +159,21 @@ angular.module('myservices', [])
   return {process:process}
 })
 // 73: {"msgId":62823930,"from":44,"msg":"V"}
-.service ('HaveMessage2Service', function (ThreadsManager, HistoriesManager) {
+.service ('HaveMessage2Service', function (ThreadsManager, MessagesManager, HistoriesManager, socket) {
   function process (packetBody) {
     console.log ('----------- HaveMessage2Service ----------');
-    var newThread = {}, 
-        newHistory = {};
-    ThreadsManager.addThread (newThread);
-    HistoriesManager.addHistory (newHistory);
-    console.log (packetBody);
+    var msg = JSON.parse(packetBody);
+    MessagesManager.addMessage(msg);
+    ThreadsManager.addThread(msg);
+    HistoriesManager.addHistory(msg);
+
+    //if chua co thread tao thread va them message moi
+    //if da co thread them message moi
+
+    //send message report
+    var packetBody = {to:msg.from, 'msgId': msg.msgId};
+    var packet = {service: 167, body: angular.toJson(packetBody)};
+    // sendPacket(socket, packet);
   }
 
   return {process:process}
@@ -220,7 +240,7 @@ angular.module('myservices', [])
   function process (packetBody) {
     console.log ('----------- Typing service ----------');
     console.log (packetBody);
-    console.log (packetBody.length);
+    // console.log (packetBody.length);
   }
 
   return {process:process}

@@ -4030,7 +4030,7 @@ angular.module('myApp.services', ['myApp.i18n', 'izhukov.utils', 'btford.socket-
     switchLayout: switchLayout
   }
 })
-.service('UsersManager', function () {
+.service('UsersManager', function (socket) {
   //{"birthday":605552400,"sex":2,"privacyViewOnlineStatus":0,"allowOl":1,"privacyAllowFindViaEmail":true,
   //"privacyViewAvatar":0,"type":0,"fullnameAscii":"Cong Map","username":"","privacyViewCommentLike":0,
   //"phoneNumber":"841656067907","userId":48,"resultCode":1,"privacyShowPreview":true,"privacyReceiveMessage":0,
@@ -4038,56 +4038,172 @@ angular.module('myApp.services', ['myApp.i18n', 'izhukov.utils', 'btford.socket-
   //"avatarSmall":"http://s0.ubon.vn/avatar/2016/02/29/1456680909472_1456680894119.jpg","privacyAllowFindWifi":true,
   //"countryCode":"84","privacyViewProfile":0,"modified":1456680972,"statusMessage":"New change new challenge",
   //"privacyVisitHomePage":1,"privacyViewStatusMsg":0,"privacyComment":2}
-  var currentUser = {};
+  var users = [],
+      currentUser = {},
+      selectedUserId = 0;
 
   this.setCurrentUser = function(value){
       currentUser = value;
   };
-
   this.getCurrentUser = function(){
       return (currentUser.length != 0) ? currentUser : null;
   };
+  this.setSelectedUserId = function(value){
+      selectedUserId = value;
+  };
+  this.getSelectedUserId = function(){
+      return selectedUserId;
+  };
+
+  // lay thong tin user tu data local neu ko co gui goi tin 24 len server
+  this.getUserById = function(userId) {
+    if (users.length > 0) {
+      var isExists = false;
+      for (var i in users) {
+        if (users[i].userId == userId) {
+          isExists = true;
+          return users[i];
+        }
+      }
+      if (!isExists) {
+        getUserInfoById (userId);  
+      };      
+    }
+    getUserInfoById (userId);
+    return null;
+  }
+  this.getUsers = function() {
+    return users;
+  }
+  this.addUser = function (user) {
+    users.push(user);
+  }
+
+  // gui request len server lay thong tin user
+  function getUserInfoById (userId, purpose){
+      var packetBody = {userId:userId, purpose:purpose};
+      var packet = {service: 24, body: JSON.stringify(packetBody)};
+      sendPacket(socket, packet);
+  }
 })
-.service ('ThreadsManager', function () {
-  var threads = [], 
-      maxThreadId = 3;
-  threads = [
-    {threadId:1, fromId:2, toId:1, fromName:"User2", toName:"User1", latestMessage:"latestMessage1", avatarSmall:"" },
-    {threadId:2, fromId:4, toId:1, fromName:"User3", toName:"User1", latestMessage:"latestMessage2", avatarSmall:"" },
-    {threadId:3, fromId:3, toId:1, fromName:"User4", toName:"User1", latestMessage:"latestMessage3", avatarSmall:"" },
-  ];
+.service ('ThreadsManager', function (UsersManager, MessagesManager) {
+  var state = {},
+      threads = [], 
+      messages = MessagesManager.getMessages();
 // {"msgId":62823930,"from":44,"msg":"V"
   this.addThread = function(value){
-      maxThreadId += 1;
-      value.threadId = maxThreadId;
-      threads.push(value);
+      //if chua co thread tao thread va them message moi
+      //if da co thread them message moi
+    if (threads.length > 0) {
+      var isExists = false;
+      for (var i in threads) {
+        if (threads[i].from == value.from) {
+          isExists = true;
+          threads[i].latestMessage = value.msg;
+          threads[i].msgId = value.msgId;
+        } else if (threads[i].from == value.to) {
+          isExists = true;
+          threads[i].latestMessage = "You: " + value.msg;
+          threads[i].msgId = value.msgId;
+        };
+      }
+      if (!isExists) {
+        addNewThread(value);
+      }
+    } else {
+      addNewThread(value);
+    }
+    threads.sort(compare);
   };
 
   this.getThreads = function(){
       return threads;
   };
   this.getThreadById = function (threadId) {
-    for (thread in listThreads) {
-      if (thread.threadId = threadId) return thread;
+    for (var i in threads) {
+      if (threads[i].from == threadId) return threads[i];
     }
-    return false;
+    return null;
+  }
+  //add new thread <threads is empty or not exists>
+  function addNewThread (value) {
+    var newThread = {from:0, latestMessage:"latestMessage", avatarSmall:"", fullname:"UBon", msgId:0};
+    newThread.from = value.from;
+    newThread.msgId = value.msgId;
+    newThread.latestMessage = value.msg;
+
+    UsersManager.getUserById(value.from, 0);
+    threads.push(newThread);
+  }
+  //sort thread by msgId desc
+  function compare(a,b) {
+    if (a.msgId < b.msgId)
+      return 1;
+    else if (a.msgId > b.msgId)
+      return -1;
+    else 
+      return 0;
   }
 })
 .service('HistoriesManager', function () {
+  // {"msgId":62823930,"from":44,"msg":"V"
   var histories = [];
   
-  this.addHistory = function(value){
-      histories.push(value);
+  this.addHistory = function(msg){
+    if (histories.length > 0) {
+      var isExists = false;
+      for (var i in histories) {
+        if (histories[i].from == msg.from || histories[i].from == msg.to) {
+          isExists = true;
+          histories[i].messages.push(msg);
+        };
+      }
+      if (!isExists) {
+        addNewHistory(msg);
+      };
+    } else {
+      addNewHistory(msg);
+    }
   };
 
   this.getHistories = function(){
       return histories;
   };
 
-  this.getHistoryById = function (threadId) {
-    for (history in histories) {
-      if (history.threadId = threadId) return history;
+  this.getHistoryById = function (fromId) {
+    for (var i in histories) {
+      if (histories[i].from = fromId) return histories[i];
     }
-    return false;
+    return null;
   }
+  //add new conversation
+  function addNewHistory (msg) {
+    var newHistory = {from:(msg.to != 'undefined')?msg.to:msg.from, messages:[msg]};
+    histories.push(newHistory);
+  }
+})
+.service ('MessagesManager', function () {
+  var messages = [];
+  this.getMessages = function () {
+    return messages;
+  }
+  this.getMessageById = function (msgId) {
+    for (var i in messages) {
+      if (messages[i].msgId ==  msgId) return messages[i];
+    }
+    return null;
+  }
+  this.getMessageByUserId = function (userId) {
+    var result = [];
+    for (var i in messages) {
+      if (messages[i].from ==  userId || messages[i].to == userId) result.push(messages[i]);
+    }
+    return result;
+  }
+  this.addMessage = function(msg) {
+    messages.push(msg);
+  };
+})
+.service ('ContactManager', function () {
+
 })

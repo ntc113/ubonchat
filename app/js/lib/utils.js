@@ -170,4 +170,8 @@ function getAvatarText (fullname){
     }
 
     return key.toUpperCase();
-};
+}
+// send packet
+function sendPacket (socket, packet) {
+    socket.emit('WebPacket', packet);
+}

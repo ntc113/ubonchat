@@ -175,7 +175,7 @@ Config.LangCountries = {"vi":"VN", "es": "ES", "ru": "RU", "en": "US", "de": "DE
         value = obj[key];
         key = prefix + key;
         cache[key] = value;
-        value = JSON.stringify(value);
+        value = angular.toJson(value);
         if (useLs) {
           try {
             localStorage.setItem(key, value);

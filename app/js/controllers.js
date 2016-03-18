@@ -202,7 +202,6 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         if (packet.service == 2) {
           try {
             var body = JSON.parse (packet.body);
-            console.log(packet.body);
             if (body.resultCode == 1) {
               UsersManager.setCurrentUser(packet.body);
               $scope.progress.enabled = true;
@@ -224,14 +223,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       });
       socket.on ('disconnect', function () {
         console.log ('has disconnect.', Math.round(+new Date()/1000));
-        // ErrorService.alert ('Has disconnect');
-        //reconnect or logout
-        // MtpApiManager.socketConnect();
-        // Storage.get('user_auth').then(function (auth) {
-        //   MtpApiManager.loginViaPass ( auth.username, auth.password );
-        // });
       });
-      console.log(socket);
     };
 
     // var socketTimeout = $timeout (function () {
@@ -249,10 +241,10 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     }
   })
 
-  .controller('AppIMController', function ($scope, $location, $routeParams, $modal, $interval, Storage, $rootScope, $modalStack, socket, MtpApiManager, AppUsersManager, AppChatsManager, ContactsSelectService, ChangelogNotifyService, ErrorService, AppRuntimeManager, HttpsMigrateService, LayoutSwitchService, ThreadsManager) {
+  .controller('AppIMController', function ($scope, $location, $routeParams, $modal, $interval, Storage, $rootScope, $modalStack, socket, MtpApiManager, AppUsersManager, AppChatsManager, ContactsSelectService, ChangelogNotifyService, ErrorService, AppRuntimeManager, HttpsMigrateService, LayoutSwitchService, UsersManager, ThreadsManager, HistoriesManager) {
     //close modal every where
     $modalStack.dismissAll();
-    console.log(socket);
+    // console.log(socket);
 
     $scope.threads = ThreadsManager.getThreads();
 
@@ -260,14 +252,15 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       console.log ('-------- has packet: ', packet.service, Math.round(+new Date()/1000));
       //$interval.cancel (socketTimeout);
     });
-    $scope.$on('$destroy', function (event) {
-        socket.removeAllListeners();
+    // $scope.$on('$destroy', function (event) {
+    //     socket.removeAllListeners();
         // or something like
         // socket.removeListener(this);
-    });
+    // });
 
     var socketTimeout = $interval (function () {
-      MtpApiManager.pingToServer();
+      sendPacket(socket, {service:1, body:''});
+      // MtpApiManager.pingToServer();
     }, 120000);
 
     /*ntc113*/
@@ -278,33 +271,33 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     //     ErrorService.alert('Alert!', 'Has disconnection.');
     // });
 
-    var isConnected = MtpApiManager.getStatusSocket();
+    // var isConnected = MtpApiManager.getStatusSocket();
 
-    MtpApiManager.getUserID().then(function (id) {
+    /*MtpApiManager.getUserID().then(function (id) {
       if (!id) {
         $location.url('/login');
         return;
       } else if (!isConnected) {
-        Storage.get('user_auth').then(function (auth) {
+        Storage.get('user_auth').then(function (auth) {*/
           // MtpApiManager.loginViaPass ( auth.username, auth.password );
-          console.log('relogin......');
-          socket.emit ('WebPacket', {service: 29, body: JSON.stringify()});
-          socket.emit('WebPacket', {service: 2, body: JSON.stringify({username:phonenumber, password:md5(password)})});
-        });
+          // console.log('relogin......');
+          // socket.emit ('WebPacket', {service: 29, body: angular.toJson()});
+          // socket.emit('WebPacket', {service: 2, body: angular.toJson({username:phonenumber, password:md5(password)})});
+        /*});
       };
-    });
+    });*/
 
-    $scope.$on('$routeUpdate', updateCurDialog);
+    /*$scope.$on('$routeUpdate', updateCurDialog);
 
     $scope.$on('history_focus', function (e, peerData) {
-      console.log ('peerData: %s', JSON.stringify(peerData));
+      console.log ('peerData: %s', angular.toJson(peerData));
       $modalStack.dismissAll();
       if (peerData.peerString == $scope.curDialog.peer && peerData.messageID == $scope.curDialog.messageID) {
         $scope.$broadcast(peerData.messageID ? 'ui_history_change_scroll' : 'ui_history_focus');
       } else {
         $location.url('/im?p=' + peerData.peerString + (peerData.messageID ? '&m=' + peerData.messageID : ''));
       }
-    });
+    });*/
 
 
     $scope.isLoggedIn = true;
@@ -314,22 +307,21 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     $scope.historyPeer = {};
     $scope.historyState = {selectActions: false, typing: []};
 
-    $scope.sendMsg = function () {
+    /*$scope.sendMsg = function () {
       // console.log ('you send msg');
       MtpApiManager.sendMsg('Hi');
-    }
+    }*/
 
     $scope.openSettings = function () {
-      $modal.open({
+      /*$modal.open({
         templateUrl: templateUrl('settings_modal'),
         controller: 'SettingsModalController',
         windowClass: 'settings_modal_window mobile_modal'
-      });
+      });*/
     }
 
     $scope.openContacts = function () {
       ContactsSelectService.selectContact().then(function (userID) {
-        console.log ()
         $scope.dialogSelect(AppUsersManager.getUserString(userID));
       });
     };
@@ -362,9 +354,9 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         }
       });
     };
-    $scope.dialogSelect = function (peerString, messageID) {
+    /*$scope.dialogSelect = function (peerString, messageID) {
       console.log ('dialogSelect');
-      var params = {peerString: peerString};
+      var params = {peerString: peerString, messageID:0};
       if (messageID) {
         params.messageID = messageID;
       }
@@ -376,14 +368,14 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       if (converted) {
         params.peerString = AppPeersManager.getPeerString(converted);
       }
-      $rootScope.$broadcast('history_focus', params);
-    };
+      // $rootScope.$broadcast('history_focus', params);
+    };*/
 
     $scope.logOut = function () {
       ErrorService.confirm({type: 'LOGOUT'}).then(function (logout) {
-        console.log('logOut: %s', JSON.stringify(logout));
+        console.log('logOut: %s', angular.toJson(logout));
 
-        MtpApiManager.logOut();
+        MtpApiManager.logOut();/**/
         $scope.isLoggedIn = false;
         location.hash = '/login';
         AppRuntimeManager.reload();
@@ -412,7 +404,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     $scope.toggleSearch = function () {
       $scope.$broadcast('dialogs_search_toggle');
     };
-    updateCurDialog();
+    /*updateCurDialog();
 
     var lastSearch = false;
     function updateCurDialog() {
@@ -431,8 +423,8 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         peer: $routeParams.p || false,
         messageID: $routeParams.m || false
       };
-      console.log ('CONTROLLER: curDialog: %s', JSON.stringify($scope.curDialog));
-    }
+      // console.log ('CONTROLLER: curDialog: %s', angular.toJson($scope.curDialog));
+    }*/
 
     $scope.randomAvatarColor = function(uid) {
         return 'user_bgcolor_' + uid%7;
@@ -442,16 +434,18 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         if (!fullname) return "";
 
         var words = fullname.split(" ");
-        if (words.length == 1)
-        {
+        if (words.length == 1) {
             key = words[0].substring(0, words[0].length == 1 ? 1 : 2);
-        }
-        else
-        {
+        } else {
             key = words[0].substring(0, 1) + words[words.length - 1].substring(0, 1);
         }
 
         return key.toUpperCase();
+    };
+    $scope.threadSelect = function (userId) {
+      $rootScope.selectedUserId = userId;
+      var selectedUserInfo = UsersManager.getUserById(userId);
+      $scope.$broadcast('history_selected', selectedUserInfo);
     };
   })
 
@@ -494,9 +488,17 @@ angular.module('myApp.controllers', ['myApp.i18n'])
 
   })
 
-  .controller('AppImHistoryController', function ($scope, $location, $timeout, $rootScope, MtpApiManager, AppUsersManager, AppChatsManager, AppMessagesManager, AppPeersManager, ApiUpdatesManager, PeersSelectService, IdleManager, StatusManager, ErrorService) {
+  .controller('AppImHistoryController', function (UsersManager, ThreadsManager, HistoriesManager, MessagesManager, $modalStack, $scope, $location, $timeout, $rootScope, MtpApiManager, AppUsersManager, AppChatsManager, AppMessagesManager, AppPeersManager, ApiUpdatesManager, PeersSelectService, IdleManager, StatusManager, ErrorService) {
 
-    $scope.$watch('curDialog', applyDialogSelect);
+    var selectedUser = {};
+    $scope.$on('history_selected', function (e, selectedUserInfo) {
+      $modalStack.dismissAll();
+      $scope.histories = MessagesManager.getMessages(); //HistoriesManager.getHistories();
+      $scope.currentHistory = MessagesManager.getMessageByUserId($rootScope.selectedUserId); //HistoriesManager.getHistoryById($rootScope.selectedUserId);
+      $scope.selectedUser = selectedUserInfo;
+      console.log($scope.currentHistory);
+      // console.log($scope.histories);
+    });
 
     ApiUpdatesManager.attach();
     IdleManager.start();
@@ -620,10 +622,10 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     function updateHistoryPeer(preload) {
       var peerData = AppPeersManager.getPeer(peerID);
       // console.log('update', preload, peerData);
-      if (!peerData/* || peerData.deleted*/) {
-        safeReplaceObject($scope.state, {loaded: false});
-        return false;
-      }
+      // if (!peerData/* || peerData.deleted*/) {
+      //   safeReplaceObject($scope.state, {loaded: false});
+      //   // return false;
+      // }
 
       peerHistory = historiesQueuePush(peerID);
 
@@ -643,6 +645,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
         $scope.$broadcast('ui_history_change');
         safeReplaceObject($scope.state, {loaded: true, empty: !peerHistory.messages.length});
       }
+      $scope.state = {loaded: true}; //ntc113 test
     }
 
     function messageFocusHistory () {
@@ -1111,18 +1114,32 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     });
   })
 
-  .controller('AppImPanelController', function($scope) {
-    $scope.$on('user_update', angular.noop);
+  .controller('AppImPanelController', function($scope, UsersManager) {
+    // $scope.selectedUserId = UsersManager.getSelectedUserId();
+    // $scope.$on('user_update', angular.noop);
   })
 
-  .controller('AppImSendController', function ($scope, $timeout, MtpApiManager, Storage, AppPeersManager, AppMessagesManager, ApiUpdatesManager, MtpApiFileManager) {
+  .controller('AppImSendController', function (socket, MessagesManager, ThreadsManager, HistoriesManager, $scope, $rootScope, $timeout, MtpApiManager, Storage, AppPeersManager, AppMessagesManager, ApiUpdatesManager, MtpApiFileManager) {
+
+    $scope.sendMsg = function (text) {
+      var NOW = Math.round(+new Date()/1000);
+      NOW++;
+      var toUserId = $rootScope.selectedUserId;
+      var msgBody = {to: toUserId, msg:text, msgId:NOW};
+      sendPacket(socket, {service:72,body:angular.toJson(msgBody)});
+      MessagesManager.addMessage(msgBody);
+      ThreadsManager.addThread(msgBody);
+      HistoriesManager.addHistory(msgBody);
+      $scope.$broadcast('history_selected');
+      $scope.draftMessage = {text:""};
+    }
 
     $scope.$watch('curDialog.peer', resetDraft);
     $scope.$on('user_update', angular.noop);
     $scope.$on('ui_typing', onTyping);
 
     $scope.draftMessage = {text: '', send: sendMessage};
-    $scope.$watch('draftMessage.text', onMessageChange);
+    // $scope.$watch('draftMessage.text', onMessageChange);
     $scope.$watch('draftMessage.files', onFilesSelected);
 
     function sendMessage (e) {
@@ -2129,7 +2146,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     })
   })
 
-  .controller('ContactsModalController', function ($rootScope, $scope, $timeout, $modal, $modalInstance, MtpApiManager, AppUsersManager, ErrorService) {
+  .controller('ContactsModalController', function (UsersManager, $rootScope, $scope, $timeout, $modal, $modalInstance, MtpApiManager, AppUsersManager, ErrorService) {
 
     $scope.contacts = [];
     $scope.foundUsers = [];
@@ -2162,13 +2179,7 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     };
 
     function updateContacts (query) {
-      MtpApiManager.getContacts ().then (function (contacts) {
-        if (typeof contacts === 'string') {
-          contacts = JSON.parse (contacts);
-        }
-        // console.log ('-------contacts ----------', contacts);
-        $scope.contacts = contacts.friends;
-      });
+      $scope.contacts = UsersManager.getUsers();
     };
 
     $scope.$watch('search.query', updateContacts);
@@ -2183,9 +2194,8 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     };
 
     $scope.contactSelect = function (userID) {
-      var params = {peerString: 'u' + userID};
-
-      $rootScope.$broadcast('history_focus', params);
+      var userInfo = UsersManager.getUserById(userID);
+      $rootScope.$broadcast('history_selected', userInfo);
       // if ($scope.disabledContacts[userID]) {
       //   return false;
       // }

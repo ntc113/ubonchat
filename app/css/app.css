@@ -3598,3 +3598,6 @@ span.im_dialog_photo {
 .user_bgcolor_6{background:#f98bae}
 .user_bgcolor_7{background:#73cdd0}
 .user_bgcolor_8{background:#fba76f}
+.btn-success {background: #3282da;}
+.im_history_message_wrap { clear: both;}
+.im_content_message_wrap { max-width: 70%;}

@@ -30,8 +30,8 @@ angular.module('izhukov.mtproto.wrapper', ['izhukov.utils', 'izhukov.mtproto'])
 
   function loginViaPass (phonenumber, password) {
     console.log ('------ Login ----------');
-    socket.emit ('WebPacket', {service: 29, body: JSON.stringify()});
-    var packet = {service: 2, body: JSON.stringify({username:phonenumber, password:md5(password)})};
+    socket.emit ('WebPacket', {service: 29, body: angular.toJson()});
+    var packet = {service: 2, body: angular.toJson({username:phonenumber, password:md5(password)})};
     socket.emit ('WebPacket', packet);
     console.log(socket);
   }
@@ -49,9 +49,9 @@ angular.module('izhukov.mtproto.wrapper', ['izhukov.utils', 'izhukov.mtproto'])
     
     // console.log ('msg: ', msg);
     var packetBody = {to:11679, msgId:NOW, 'msg': msg};
-    var packet = {service: 72, body: JSON.stringify(packetBody)};
+    var packet = {service: 72, body: angular.toJson(packetBody)};
     /*var packetBody = {to:'11679', toUsername:'', content:''}
-    var packet = {service: 61, body: JSON.stringify(packetBody)};
+    var packet = {service: 61, body: angular.toJson(packetBody)};
     */
     socket.emit('WebPacket', packet);
   }
@@ -62,7 +62,7 @@ angular.module('izhukov.mtproto.wrapper', ['izhukov.utils', 'izhukov.mtproto'])
     var NOW = Math.round(+new Date()/1000);
     NOW++;
     var packetBody = {to:userId, msgId:NOW, 'msg': msg};
-    var packet = {service: 72, body: JSON.stringify(packetBody)};
+    var packet = {service: 72, body: angular.toJson(packetBody)};
     socket.emit('WebPacket', packet);
   }
 
@@ -97,14 +97,14 @@ angular.module('izhukov.mtproto.wrapper', ['izhukov.utils', 'izhukov.mtproto'])
 
   function findFriend (phonenumber) {
     var packetBody = {username:phonenumber, purpose:'1001'}
-    var packet = {service: 24, body: JSON.stringify(packetBody)};
+    var packet = {service: 24, body: angular.toJson(packetBody)};
     
     socket.emit('WebPacket', packet);
   }
   function makeFriend(userId) {
       console.log ('makeFriend');
       var packetBody = {to:'userId', toUsername:'', content:''}
-      var packet = {service: 61, body: JSON.stringify(packetBody)};      
+      var packet = {service: 61, body: angular.toJson(packetBody)};      
       socket.emit('WebPacket', packet);
   }
 
