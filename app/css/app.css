@@ -3589,7 +3589,7 @@ span.im_dialog_photo {
 .user_color_5,.user_color_5:hover{color:#b7635d}
 .user_color_6,.user_color_6:hover{color:#b3577a}
 .user_color_7,.user_color_7:hover{color:#5397b4}
-.user_color_8,.user_color_8:hover{color:#c07844}
+.user_color_8,.user_color_8:hover,.user_color_0,.user_color_0:hover{color:#c07844}
 .user_bgcolor_1{background:#cc90e2}
 .user_bgcolor_2{background:#80d066}
 .user_bgcolor_3{background:#ecd074}
@@ -3597,7 +3597,10 @@ span.im_dialog_photo {
 .user_bgcolor_5{background:#e57979}
 .user_bgcolor_6{background:#f98bae}
 .user_bgcolor_7{background:#73cdd0}
-.user_bgcolor_8{background:#fba76f}
+.user_bgcolor_8, .user_bgcolor_0{background:#fba76f}
 .btn-success {background: #3282da;}
 .im_history_message_wrap { clear: both;}
 .im_content_message_wrap { max-width: 70%;}
+.im_message_from_photo, .im_message_contact_photo, .im_message_fwd_photo {
+  font-weight: bold; line-height: 34px; text-align: center; color: #fff; float: left;
+}

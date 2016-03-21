@@ -494,11 +494,27 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     $scope.$on('history_selected', function (e, selectedUserInfo) {
       $modalStack.dismissAll();
       $scope.histories = MessagesManager.getMessages(); //HistoriesManager.getHistories();
-      $scope.currentHistory = MessagesManager.getMessageByUserId($rootScope.selectedUserId); //HistoriesManager.getHistoryById($rootScope.selectedUserId);
+      // $scope.currentHistory = MessagesManager.getMessageByUserId($rootScope.selectedUserId); //HistoriesManager.getHistoryById($rootScope.selectedUserId);
       $scope.selectedUser = selectedUserInfo;
-      console.log($scope.currentHistory);
+      // console.log($scope.currentHistory);
       // console.log($scope.histories);
     });
+    $scope.randomAvatarColor = function(uid) {
+        return 'user_bgcolor_' + uid%7;
+    }
+    $scope.getAvatarText = function(fullname){
+        var key = "";
+        if (!fullname) return "";
+
+        var words = fullname.split(" ");
+        if (words.length == 1) {
+            key = words[0].substring(0, words[0].length == 1 ? 1 : 2);
+        } else {
+            key = words[0].substring(0, 1) + words[words.length - 1].substring(0, 1);
+        }
+
+        return key.toUpperCase();
+    };
 
     ApiUpdatesManager.attach();
     IdleManager.start();
@@ -1121,11 +1137,11 @@ angular.module('myApp.controllers', ['myApp.i18n'])
 
   .controller('AppImSendController', function (socket, MessagesManager, ThreadsManager, HistoriesManager, $scope, $rootScope, $timeout, MtpApiManager, Storage, AppPeersManager, AppMessagesManager, ApiUpdatesManager, MtpApiFileManager) {
 
-    $scope.sendMsg = function (text) {
+    // var toUserId = $rootScope.selectedUserId;
+    $scope.sendMsg = function () {
       var NOW = Math.round(+new Date()/1000);
       NOW++;
-      var toUserId = $rootScope.selectedUserId;
-      var msgBody = {to: toUserId, msg:text, msgId:NOW};
+      var msgBody = {to: $rootScope.selectedUserId, msg:$scope.draftMessage.text, msgId:NOW};
       sendPacket(socket, {service:72,body:angular.toJson(msgBody)});
       MessagesManager.addMessage(msgBody);
       ThreadsManager.addThread(msgBody);
@@ -1133,6 +1149,14 @@ angular.module('myApp.controllers', ['myApp.i18n'])
       $scope.$broadcast('history_selected');
       $scope.draftMessage = {text:""};
     }
+    $scope.keypress = function(event){
+        if (event.which === 13) {
+            $scope.sendMsg();
+        } else {
+            sendPacket(socket, {service:142,body:JSON.stringify({to:$rootScope.selectedUserId})});
+        }
+
+    };
 
     $scope.$watch('curDialog.peer', resetDraft);
     $scope.$on('user_update', angular.noop);
@@ -2146,9 +2170,26 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     })
   })
 
-  .controller('ContactsModalController', function (UsersManager, $rootScope, $scope, $timeout, $modal, $modalInstance, MtpApiManager, AppUsersManager, ErrorService) {
+  .controller('ContactsModalController', function (UsersManager, ThreadsManager, $rootScope, $scope, $timeout, $modal, $modalInstance, MtpApiManager, AppUsersManager, ErrorService) {
 
-    $scope.contacts = [];
+    $scope.randomAvatarColor = function(uid) {
+        return 'user_bgcolor_' + uid%7;
+    }
+    $scope.getAvatarText = function(fullname){
+        var key = "";
+        if (!fullname) return "";
+
+        var words = fullname.split(" ");
+        if (words.length == 1) {
+            key = words[0].substring(0, words[0].length == 1 ? 1 : 2);
+        } else {
+            key = words[0].substring(0, 1) + words[words.length - 1].substring(0, 1);
+        }
+
+        return key.toUpperCase();
+    };
+
+    $scope.contacts = UsersManager.getUsers();
     $scope.foundUsers = [];
     $scope.search = {};
     $scope.slice = {limit: 20, limitDelta: 20};
@@ -2194,21 +2235,11 @@ angular.module('myApp.controllers', ['myApp.i18n'])
     };
 
     $scope.contactSelect = function (userID) {
+      $rootScope.selectedUserId = userID;
       var userInfo = UsersManager.getUserById(userID);
+      var newThread = {from:userID, latestMessage:"", avatarSmall:userInfo.avatarSmall, fullname:userInfo.fullname, msgId:0};
+      ThreadsManager.addThread(newThread);
       $rootScope.$broadcast('history_selected', userInfo);
-      // if ($scope.disabledContacts[userID]) {
-      //   return false;
-      // }
-      // if (!$scope.multiSelect) {
-      //   return $modalInstance.close(userID);
-      // }
-      // if ($scope.selectedContacts[userID]) {
-      //   delete $scope.selectedContacts[userID];
-      //   $scope.selectedCount--;
-      // } else {
-      //   $scope.selectedContacts[userID] = true;
-      //   $scope.selectedCount++;
-      // }
     };
 
     $scope.submitSelected = function () {

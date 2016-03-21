@@ -56,8 +56,10 @@ angular.module('myservices', [])
   function process (packetBody) {
     console.log ('----------- FriendListService ----------');
     var listUser = JSON.parse(packetBody);
-    for (var i in listUser)
-      UsersManager.addUser(listUser[i]);
+    var contacts = listUser.friends;
+    for (var i in contacts) {
+      UsersManager.addUser(contacts[i]);
+    }
   }
 
   return {process:process}
@@ -66,28 +68,6 @@ angular.module('myservices', [])
 .service ('UserInfoService', function (UsersManager, ThreadsManager) {// function ($rootScope, $modal, $modalStack, Storage, ErrorService) {
   function process (packetBody) {
     console.log ('----------- UserInfoService ----------');
-    /*var userInfo = {};
-    var scope = $rootScope.$new();
-    try {
-      userInfo = JSON.parse (packetBody);
-      console.log ('userInfo: ', userInfo);
-      if (userInfo.error != 1) {
-        scope.userInfo = userInfo;
-
-        $modalStack.dismissAll();
-        var modalInstance = $modal.open({
-          templateUrl: templateUrl('user_modal'),
-          controller: 'UserModalController',
-          scope: scope,
-          windowClass: 'user_modal_window mobile_modal'
-        });
-      } else {
-        scope.error_no_phone = true;
-        // ErrorService.alert('Số điện thoại bạn tìm chưa sử dụng UBon.');
-      }
-    } catch (e) {
-      console.log ('Error: ', e);
-    }*/
     // get UserInfo
     var threads = ThreadsManager.getThreads();
     var user = JSON.parse(packetBody);
@@ -173,7 +153,7 @@ angular.module('myservices', [])
     //send message report
     var packetBody = {to:msg.from, 'msgId': msg.msgId};
     var packet = {service: 167, body: angular.toJson(packetBody)};
-    // sendPacket(socket, packet);
+    sendPacket(socket, packet);
   }
 
   return {process:process}

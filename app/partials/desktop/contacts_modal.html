@@ -39,11 +39,11 @@
 
           <ul ng-switch-default class="contacts_modal_members_list nav nav-pills nav-stacked">
             
-            <li class="contacts_modal_contact_wrap clearfix" ng-repeat="contact in contacts | filter:search.query | orderBy:'contact.fullname' track by contact.fullname" ng-class="{active: selectedContacts[contact.userId], disabled: disabledContacts[contact.userId]}">
+            <li class="contacts_modal_contact_wrap clearfix" ng-repeat="contact in contacts | filter:search.query | orderBy:'contact.fullname' track by contact.userId" ng-class="{active: selectedContacts[contact.userId], disabled: disabledContacts[contact.userId]}">
               <a class="im_dialog" ng-click="contactSelect(contact.userId)">
                 <div class="im_dialog_photo pull-left" img-class="im_dialog_photo">
                   <img ng-show="contact.avatarSmall.length > 0" class="im_dialog_photo" src="{{contact.avatarSmall}}" alt="">
-                  <span ng-show="contact.avatarSmall.length == 0" class="im_dialog_photo">BC</span>
+                  <span ng-show="contact.avatarSmall.length == 0" class="im_dialog_photo" ng-class="randomAvatarColor(contact.userId)">{{getAvatarText(contact.fullname)}}</span>
                 </div>
                 <div class="im_dialog_message_wrap">
                   <div class="im_dialog_peer">

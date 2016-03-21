@@ -4127,10 +4127,9 @@ angular.module('myApp.services', ['myApp.i18n', 'izhukov.utils', 'btford.socket-
   }
   //add new thread <threads is empty or not exists>
   function addNewThread (value) {
-    var newThread = {from:0, latestMessage:"latestMessage", avatarSmall:"", fullname:"UBon", msgId:0};
-    newThread.from = value.from;
-    newThread.msgId = value.msgId;
-    newThread.latestMessage = value.msg;
+    var newThread = {from:value.from, latestMessage:value.msg, msgId:value.msgId};
+    newThread.avatarSmall = (value.avatarSmall == "undefined") ? "" : value.avatarSmall;
+    newThread.fullname = (value.fullname == "undefined") ? "UBon" : value.fullname;
 
     UsersManager.getUserById(value.from, 0);
     threads.push(newThread);
@@ -4206,4 +4205,10 @@ angular.module('myApp.services', ['myApp.i18n', 'izhukov.utils', 'btford.socket-
 })
 .service ('ContactManager', function () {
 
+})
+.factory ('socket', function (socketFactory){
+  var options = {
+    ioSocket: io('http://123.30.236.111:9092', { forceNew:true, 'multiplex':false })
+  }
+  return socketFactory(options);
 })

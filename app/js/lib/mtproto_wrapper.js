@@ -33,7 +33,6 @@ angular.module('izhukov.mtproto.wrapper', ['izhukov.utils', 'izhukov.mtproto'])
     socket.emit ('WebPacket', {service: 29, body: angular.toJson()});
     var packet = {service: 2, body: angular.toJson({username:phonenumber, password:md5(password)})};
     socket.emit ('WebPacket', packet);
-    console.log(socket);
   }
 
   function pingToServer () {

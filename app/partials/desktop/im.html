@@ -122,7 +122,8 @@
                             <div class="im_message_wrap clearfix">
                               <div class="im_content_message_wrap" ng-class="{'pull-right': msg.to > 0}">
                                 <a class="im_message_from_photo pull-left" img-class="im_message_from_photo" ng-hide="msg.to > 0">
-                                  <img class="im_message_from_photo" src="{{selectedUser.avatarSmall}}" />
+                                  <img ng-show="selectedUser.avatarSmall.length > 0" class="im_message_from_photo" src="{{selectedUser.avatarSmall}}" />
+                                  <span ng-show="selectedUser.avatarSmall.length == 0" class="im_message_from_photo" ng-class="randomAvatarColor(selectedUser.userId)">{{getAvatarText(selectedUser.fullname)}}</span>
                                 </a>
 
                                 <!-- <div class="im_message_meta pull-right text-right">
@@ -202,7 +203,7 @@
 
                     <div class="im_send_field_wrap">
                       <div class="im_send_dropbox_wrap" my-i18n="im_photos_drop_text"></div>
-                      <textarea ng-model="draftMessage.text" placeholder="{{'im_message_field_placeholder' | i18n}}" class="form-control im_message_field no_outline"></textarea>
+                      <textarea  ng-keypress="keypress($event)" ng-model="draftMessage.text" placeholder="{{'im_message_field_placeholder' | i18n}}" class="form-control im_message_field no_outline"></textarea>
                     </div>
 
                     <!-- <div class="im_media_attach pull-right">
@@ -219,7 +220,7 @@
                       <i class="icon icon-emoji"></i>
                     </div> -->
 
-                    <button type="submit" class="btn btn-success im_submit" ng-click="sendMsg(draftMessage.text)">
+                    <button ng-show="selectedUserId > 0" type="submit" class="btn btn-success im_submit" ng-click="sendMsg()">
                       <span class="im_submit_text" my-i18n="im_submit_message"></span>
                     </button>
                   </form>
